@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.eintamil" name="EinTamil Kodi Repository" version="0.0.1" provider-name="EinTamil">
+    <extension point="xbmc.addon.repository" name="EinTamil Kodi Repository">
+        <info compressed="false">https://raw.githubusercontent.com/eintamil/repository.eintamil/master/zips/addons.xml</info>
+        <checksum>https://raw.githubusercontent.com/eintamil/repository.eintamil/master/zips/addons.xml.md5</checksum>
+        <datadir zip="true">https://raw.githubusercontent.com/eintamil/repository.eintamil/master/zips/</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>EinTamil Kodi Repository</summary>
+        <description>https://eintamil.github.io/</description>
+        <website>https://eintamil.github.io/</website>
+        <platform>all</platform>
+    </extension>
+</addon>
