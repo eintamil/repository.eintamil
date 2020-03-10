@@ -11,12 +11,11 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
-import html
-import urllib.error
-import urllib.parse
-import urllib.request
+import HTMLParser
+from six.moves import urllib
 
-ADDON = xbmcaddon.Addon(id="plugin.video.einthusan3")
+
+ADDON = xbmcaddon.Addon(id="plugin.video.einthusan2")
 BASE_URL = "https://einthusan.tv"
 
 
@@ -285,7 +284,7 @@ def play_video(name, url, language, mode):
 def get_video(s, mainurl, mainurlajax, headers=None):
     xbmc.log("get_video: " + str(mainurl), level=xbmc.LOGNOTICE)
 
-    htm = s.get(mainurl, headers=headers, cookies=s.cookies).text
+    htm = s.get(mainurl, headers=headers, cookies=s.cookies).text.encode("utf-8")
     # xbmc.log(htm, level=xbmc.LOGNOTICE)
 
     if re.search("Our servers are almost maxed", htm):
@@ -320,7 +319,7 @@ def get_video(s, mainurl, mainurlajax, headers=None):
     r = decodeEInth(lnk)
     jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % lnk
     gid = re.findall("data-pageid=[\"'](.*?)[\"']", htm)[0]
-    gid = html.unescape(gid)
+    gid = HTMLParser.HTMLParser().unescape(gid).encode("utf-8")
 
     postdata = {
         "xEvent": "UIVideoPlayer.PingOutcome",

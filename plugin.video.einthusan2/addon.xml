@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.einthusan2" name="Einthusan" version="2.0.1" provider-name="EinTamil">
+    <requires>
+        <import addon="repository.eintamil" version="0.0.1"/>
+        <import addon="xbmc.python" version="2.25.0"/>
+        <import addon="script.module.six" version="1.13.0" />
+        <import addon="script.module.requests" version="2.22.0" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary>Einthusan Video Addon - Version 2.0.1</summary>
+        <description>Einthusan Video Addon for Kodi 18.x - Supports XBMC Python 2.x</description>
+    </extension>
+</addon>
