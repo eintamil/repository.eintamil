@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+   <category label="General">
+      <setting type="lsep" label="Login"/>
+      <setting type="bool" label="User Login" id="user_login" default="false" />
+      <setting subsetting="true" type="text" label="Username" id="login_user" enable="eq(-1,true)" default="" />
+      <setting subsetting="true" type="text" label="Password" id="login_passwd" option="hidden" enable="eq(-2,true)+!eq(-1,)" default="" />
+      <setting type="lsep" label="Advanced"/>
+      <setting type="text" label="Enter Base URL" id="base_url" default="https://einthusan.tv" />
+   </category>
+</settings>

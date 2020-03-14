@@ -1,5 +1,6 @@
 # Credits https://github.com/humla/
 # Credits https://github.com/reasonsrepo/
+# Credits https://github.com/eintamil/
 
 import base64
 import datetime
@@ -14,9 +15,13 @@ import xbmcplugin
 import HTMLParser
 from six.moves import urllib
 
-
 ADDON = xbmcaddon.Addon(id="plugin.video.einthusan2")
-BASE_URL = "https://einthusan.tv"
+# BASE_URL = "https://einthusan.tv"
+BASE_URL = ADDON.getSetting("base_url")
+USER_LOGIN = ADDON.getSetting("user_login")
+LOGIN_USER = ADDON.getSetting("login_user")
+LOGIN_PASSWD = ADDON.getSetting("login_passwd")
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 
 
 def addDir(name, url, mode, iconimage, lang="", description="", isplayable=False):
@@ -68,6 +73,8 @@ def get_params():
 
 
 def select_lang(name, url, language, mode):
+    xbmc.log("BASE_URL: " + BASE_URL, level=xbmc.LOGNOTICE)
+    xbmc.log("USER_LOGIN: " + USER_LOGIN, level=xbmc.LOGNOTICE)
     addDir("Tamil", "", 1, "", "tamil")
     addDir("Hindi", "", 1, "", "hindi")
     addDir("Telugu", "", 1, "", "telugu")
@@ -212,7 +219,7 @@ def menu_rating(name, url, language, mode):
 
 
 def menu_search(name, url, language, mode):
-    keyb = xbmc.Keyboard("", "Search for Movies")
+    keyb = xbmc.Keyboard("", "Search")
     keyb.doModal()
     if keyb.isConfirmed():
         search_term = urllib.parse.quote_plus(keyb.getText())
@@ -223,10 +230,19 @@ def menu_search(name, url, language, mode):
 
 def play_video(name, url, language, mode):
     s = requests.Session()
-    print("Playing: " + name + ", with url:" + url)
+
     xbmc.log("play_video: " + url, level=xbmc.LOGNOTICE)
+    xbmc.log("user_login: " + USER_LOGIN, level=xbmc.LOGNOTICE)
 
     name, url, lang, whathd, referurl = url.split(",")
+
+    if USER_LOGIN == "true":
+        get_loggedin_session(s, lang, referurl)
+        # xbmc.log("session: " + str(s), level=xbmc.LOGNOTICE)
+
+    # set default to SHD
+    mainurl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
+    mainurlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
 
     if whathd == "uhd":
         dialog = xbmcgui.Dialog()
@@ -236,58 +252,34 @@ def play_video(name, url, language, mode):
             autoclose=5000,
             preselect=0,
         )
-
-        if ret1 == 0:
-            # whathd = 'shd'
-            mainurl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
-            mainurlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang,)
-            print(mainurlajax)
-            headers = {
-                "Origin": BASE_URL,
-                "Referer": BASE_URL + "/movie/browse/?lang=tamil",
-                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
-            }
-            ret2 = get_video(s, mainurl, mainurlajax, headers)
-
         if ret1 == 1:
             # whathd = 'uhd'
-            headers = {
-                "Origin": BASE_URL,
-                "Referer": BASE_URL + "/movie/browse/?lang=tamil",
-                "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
-            }
-            mainurl = "%s/movie/watch/%s/?lang=%s&uhd=true" % (BASE_URL, url, lang,)
-            mainurlajax = "%s/ajax/movie/watch/%s/?lang=%s&uhd=true" % (
-                BASE_URL,
-                url,
-                lang,
-            )
-            # ultraHD needs lifetime premium login
-            # login_info(s, referurl)
-            ret2 = get_video(s, mainurl, mainurlajax, headers)
-
+            mainurl = mainurl + "&uhd=true"
+            mainurlajax = mainurlajax + "&uhd=true"
+        else:
+            pass
     else:
-        mainurl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
-        mainurlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
-        headers = {
-            "Origin": BASE_URL,
-            "Referer": BASE_URL + "/movie/browse/?lang=tamil",
-            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
-        }
-        ret2 = get_video(s, mainurl, mainurlajax, headers)
+        pass
+
+    headers = {
+        "Origin": BASE_URL,
+        "Referer": BASE_URL + "/movie/browse/?lang=" + lang,
+        "User-Agent": USER_AGENT,
+    }
+    ret2 = get_video(s, lang, mainurl, mainurlajax, headers)
 
     if ret2 == False:
         return False
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
-def get_video(s, mainurl, mainurlajax, headers=None):
+def get_video(s, language, mainurl, mainurlajax, headers=None):
     xbmc.log("get_video: " + str(mainurl), level=xbmc.LOGNOTICE)
 
-    htm = s.get(mainurl, headers=headers, cookies=s.cookies).text.encode("utf-8")
-    # xbmc.log(htm, level=xbmc.LOGNOTICE)
+    html1 = s.get(mainurl, headers=headers, cookies=s.cookies).text.encode("utf-8")
+    # xbmc.log(html1, level=xbmc.LOGNOTICE)
 
-    if re.search("Our servers are almost maxed", htm):
+    if re.search("Our servers are almost maxed", html1):
         xbmc.log(
             "Sorry. Our servers are almost maxed. Remaining quota is for premium members.",
             level=xbmc.LOGERROR,
@@ -302,7 +294,7 @@ def get_video(s, mainurl, mainurlajax, headers=None):
         )
         return False
 
-    if re.search("Go Premium", htm):
+    if re.search("Go Premium", html1):
         xbmc.log(
             "Go Premium. Please Login or Register an account then re-visit this page to continue.",
             level=xbmc.LOGERROR,
@@ -310,39 +302,31 @@ def get_video(s, mainurl, mainurlajax, headers=None):
         xbmcgui.Dialog().ok(
             "UltraHD Error",
             "Premium Membership Required for UltraHD Movies.",
-            "Please add Login details in Addon Settings.",
+            "Please add Premium Membership Login details in Addon Settings.",
         )
         return False
 
-    lnk = re.findall("data-ejpingables=[\"'](.*?)[\"']", htm)[0]
-    # xbmc.log("lnk: " + lnk, level=xbmc.LOGNOTICE)
-    r = decodeEInth(lnk)
-    jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % lnk
-    gid = re.findall("data-pageid=[\"'](.*?)[\"']", htm)[0]
-    gid = HTMLParser.HTMLParser().unescape(gid).encode("utf-8")
+    ejp = re.findall("data-ejpingables=[\"'](.*?)[\"']", html1)[0]
+    xbmc.log("ejp: " + ejp, level=xbmc.LOGNOTICE)
+    jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % ejp
+    csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
+    csrf1 = HTMLParser.HTMLParser().unescape(csrf1).encode("utf-8")
 
     postdata = {
         "xEvent": "UIVideoPlayer.PingOutcome",
         "xJson": jdata,
         "arcVersion": "3",
         "appVersion": "59",
-        "gorilla.csrf.Token": gid,
+        "gorilla.csrf.Token": csrf1,
     }
 
     rdata = s.post(mainurlajax, headers=headers, data=postdata, cookies=s.cookies).text
-    r = json.loads(rdata)["Data"]["EJLinks"]
-    xbmc.log("decodeEInth: " + str(decodeEInth(r)), level=xbmc.LOGNOTICE)
-    lnk = json.loads(base64.b64decode(str(decodeEInth(r))))["HLSLink"]
-    # lnk = preferred_server(lnk, mainurl)
-    xbmc.log("lnk: " + lnk, level=xbmc.LOGNOTICE)
-    urlnew = lnk + (
-        "|%s&Referer=%s&User-Agent=%s"
-        % (
-            BASE_URL,
-            mainurl,
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
-        )
-    )
+    ejl = json.loads(rdata)["Data"]["EJLinks"]
+    xbmc.log("decodeEInth: " + str(decodeEInth(ejl)), level=xbmc.LOGNOTICE)
+    url = json.loads(base64.b64decode(str(decodeEInth(ejl))))["HLSLink"]
+    # url = preferred_server(url, mainurl)
+    xbmc.log("url: " + url, level=xbmc.LOGNOTICE)
+    urlnew = url + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, mainurl, USER_AGENT))
     xbmc.log("urlnew: " + urlnew, level=xbmc.LOGNOTICE)
     listitem = xbmcgui.ListItem(name)
     iconImage = "DefaultVideo.png"
@@ -353,6 +337,72 @@ def get_video(s, mainurl, mainurlajax, headers=None):
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
 
     s.close()
+
+
+def get_loggedin_session(s, language, referurl):
+    xbmc.log("get_loggedin_session: " + referurl, level=xbmc.LOGNOTICE)
+    headers = {
+        "Origin": BASE_URL,
+        "Referer": referurl,
+        "User-Agent": USER_AGENT,
+    }
+
+    html1 = s.get(
+        BASE_URL + "/login/?lang=" + language, headers=headers, allow_redirects=False,
+    ).text.encode("utf-8")
+
+    csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
+
+    if "&#43;" in csrf1:
+        csrf1 = csrf1.replace("&#43;", "+")
+
+    headers["X-Requested-With"] = "XMLHttpRequest"
+    headers["Referer"] = BASE_URL + "/login/?lang=" + language
+
+    body = {
+        "xEvent": "Login",
+        "xJson": '{"Email":"' + LOGIN_USER + '","Password":"' + LOGIN_PASSWD + '"}',
+        "arcVersion": 3,
+        "appVersion": 59,
+        "tabID": csrf1 + "48",
+        "gorilla.csrf.Token": csrf1,
+    }
+
+    html2 = s.post(
+        BASE_URL + "/ajax/login/?lang=" + language,
+        headers=headers,
+        cookies=s.cookies,
+        data=body,
+        allow_redirects=False,
+    )
+
+    html3 = s.get(
+        BASE_URL
+        + "/account/?flashmessage=success%3A%3A%3AYou+are+now+logged+in.&lang="
+        + language,
+        headers=headers,
+        cookies=s.cookies,
+    ).text.encode("utf-8")
+
+    csrf3 = re.findall("data-pageid=[\"'](.*?)[\"']", html3)[0]
+
+    body4 = {
+        "xEvent": "notify",
+        "xJson": '{"Alert":"SUCCESS","Heading":"AWESOME!","Line1":"You+are+now+logged+in.","Buttons":[]}',
+        "arcVersion": 3,
+        "appVersion": 59,
+        "tabID": csrf1 + "48",
+        "gorilla.csrf.Token": csrf3,
+    }
+
+    html4 = s.post(
+        BASE_URL + "/ajax/account/?lang=" + language,
+        headers=headers,
+        cookies=s.cookies,
+        data=body4,
+    )
+
+    return s
 
 
 def menu_featured(name, url, language, mode):
@@ -421,13 +471,6 @@ def scrape_videos(name, url, language, mode):
 
 
 def decodeEInth(lnk):
-    t = 10
-    # var t=10,r=e.slice(0,t)+e.slice(e.length-1)+e.slice(t+2,e.length-1)
-    r = lnk[0:t] + lnk[-1] + lnk[t + 2 : -1]
-    return r
-
-
-def encodeEInth(lnk):
     t = 10
     # var t=10,r=e.slice(0,t)+e.slice(e.length-1)+e.slice(t+2,e.length-1)
     r = lnk[0:t] + lnk[-1] + lnk[t + 2 : -1]
