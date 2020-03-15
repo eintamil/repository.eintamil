@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.einthusan2" name="Einthusan" version="2.0.2" provider-name="EinTamil">
+<addon id="plugin.video.einthusan2" name="Einthusan" version="2.0.3" provider-name="EinTamil">
     <requires>
         <import addon="repository.eintamil" version="0.0.1"/>
         <import addon="xbmc.python" version="2.25.0"/>
@@ -17,7 +17,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.einthusan3" name="Einthusan" version="3.0.2" provider-name="EinTamil">
+<addon id="plugin.video.einthusan3" name="Einthusan" version="3.0.3" provider-name="EinTamil">
     <requires>
         <import addon="repository.eintamil" version="0.0.1"/>
         <import addon="xbmc.python" version="3.0.0"/>
@@ -44,22 +44,6 @@
         <description>https://eintamil.github.io/</description>
         <website>https://eintamil.github.io/</website>
         <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.einthusan" name="Einthusan" version="1.5.1" provider-name="humla,ReasonsRepo,EinTamil">
-    <requires>
-        <import addon="repository.eintamil" version="0.0.1"/>
-        <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.requests" version="2.22.0" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <summary>Einthusan Video Addon - Version 1.5.1</summary>
-        <description>Deprecated - Use v2.x or v3.x Latest Version</description>
     </extension>
 </addon>
 </addons>

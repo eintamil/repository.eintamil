@@ -75,14 +75,18 @@ def get_params():
 def select_lang(name, url, language, mode):
     xbmc.log("BASE_URL: " + BASE_URL, level=xbmc.LOGNOTICE)
     xbmc.log("USER_LOGIN: " + USER_LOGIN, level=xbmc.LOGNOTICE)
-    addDir("Tamil", "", 1, "", "tamil")
-    addDir("Hindi", "", 1, "", "hindi")
-    addDir("Telugu", "", 1, "", "telugu")
-    addDir("Malayalam", "", 1, "", "malayalam")
-    addDir("Kannada", "", 1, "", "kannada")
-    addDir("Bengali", "", 1, "", "bengali")
-    addDir("Marathi", "", 1, "", "marathi")
-    addDir("Punjabi", "", 1, "", "punjabi")
+    languages = [
+        "Tamil",
+        "Hindi",
+        "Telugu",
+        "Malayalam",
+        "Kannada",
+        "Bengali",
+        "Marathi",
+        "Punjabi",
+    ]
+    for lang in languages:
+        addDir(lang, "", 1, "", str.lower(lang))
     addDir("Addon Settings", "", 2, "DefaultAddonService.png", "")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 

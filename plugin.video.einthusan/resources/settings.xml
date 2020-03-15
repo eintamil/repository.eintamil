@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-   <category label="30000">
-      <setting label="30002" id="username" type="text" default="" />
-      <setting label="30003" id="password" type="text" option="hidden" enable="!eq(-1,)" default="" />
-      <setting label="30011" type="lsep"/>
-      <setting label="30004" id="location" type="select" lvalues="30012|30005|30006|30007|30008|30009|30010" default="30012"/>
-   </category>
-</settings>
