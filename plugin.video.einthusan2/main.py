@@ -27,7 +27,7 @@ from six.moves import urllib
 __settings__ = xbmcaddon.Addon(id="plugin.video.einthusan2")
 
 BASE_URL = __settings__.getSetting("base_url")
-USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
 
 
 def addDir(name, url, mode, iconimage, lang="", description="", isplayable=False):
@@ -484,7 +484,7 @@ def scrape_videos(name, url, language, mode):
     xbmc.log("scrape_videos: " + url, level=xbmc.LOGNOTICE)
     html1 = requests.get(url).text
     matches = re.compile(
-        '<div class="block1">.*?href=".*?watch\/(.*?)\/\?lang=(.*?)".*?<img src="(.+?)".+?<h3>(.+?)<\/h3>.+?i class(.+?)<p class="synopsis">(.+?)<\/p>.+?<span>Wiki<'
+        '<div class="block1">.*?href=".*?watch\/(.*?)\/\?lang=(.*?)".*?<img src="(.+?)".+?<h3>(.+?)<\/h3>.+?i class(.+?)<p class=".*?synopsis">(.+?)<\/p>.+?<span>Wiki<'
     ).findall(html1)
     nextpage = re.findall('data-disabled="([^"]*)" href="(.+?)"', html1)[-1]
     for movieid, lang, img, name, ishd, synopsis in matches:
