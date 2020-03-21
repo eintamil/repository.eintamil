@@ -32,12 +32,12 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, li
 
 def addLog(message, level="notice"):
     if level == "error":
-        xbmc.log(message, level=xbmc.LOGERROR)
+        xbmc.log(str(message), level=xbmc.LOGERROR)
     else:
-        xbmc.log(message, level=xbmc.LOGNOTICE)
+        xbmc.log(str(message), level=xbmc.LOGNOTICE)
 
 
-def addDir(name, url, mode, iconimage, lang="", description="", isplayable=False):
+def addDir(name, url, mode, image, lang="", description="", isplayable=False):
     u = (
         sys.argv[0]
         + "?url="
@@ -53,9 +53,8 @@ def addDir(name, url, mode, iconimage, lang="", description="", isplayable=False
     )
 
     listitem = xbmcgui.ListItem(name)
-    iconImage = "DefaultFolder.png"
-    thumbnailImage = iconimage
-    listitem.setArt({"icon": iconImage, "thumb": thumbnailImage})
+    thumbnailImage = image
+    listitem.setArt({"icon": "DefaultFolder.png", "thumb": thumbnailImage})
     listitem.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     listitem.setProperty("IsPlayable", "true")
     isfolder = True
@@ -88,17 +87,38 @@ def get_params():
 def select_lang(name, url, language, mode):
     addLog("BASE_URL: " + BASE_URL)
     languages = [
-        "Tamil",
-        "Hindi",
-        "Telugu",
-        "Malayalam",
-        "Kannada",
-        "Bengali",
-        "Marathi",
-        "Punjabi",
+        ("tamil", "", "Tamil"),
+        ("hindi", "", "Hindi"),
+        ("telugu", "", "Telugu"),
+        ("malayalam", "", "Malayalam"),
+        ("kannada", "", "Kannada"),
+        ("bengali", "", "Bengali"),
+        ("marathi", "", "Marathi"),
+        ("punjabi", "", "Punjabi"),
     ]
-    for lang in languages:
-        addDir(lang, "", 1, "", str.lower(lang))
+    lang_pattern = '<li><a href=".*?\?lang=(.+?)"><div.*?div><img src="(.+?)"><p class=".*?-bg">(.+?)<\/p>'
+    try:
+        html1 = requests.get(BASE_URL).text
+        lang_matches = re.findall(lang_pattern, html1)
+        if len(lang_matches) == 0:
+            addLog("check lang_pattern", "error")
+        else:
+            languages = lang_matches
+    except:
+        addLog("check BASE_URL", "error")
+        xbmcgui.Dialog().ok(
+            "Base URL Error",
+            "Please check Base URL in Addon Settings",
+            "Please restart the addon after editing Base URL",
+        )
+    for lang_item in languages:
+        lang = str(lang_item[0])
+        title = str(lang_item[2])
+        if "http" not in lang_item[1] and lang_item[1] != "":
+            image = "https://" + str(lang_item[1])
+        else:
+            image = ""
+        addDir(title, "", 1, image, lang)
     addDir("Addon Settings", "", 2, "DefaultAddonService.png", "")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -241,7 +261,6 @@ def menu_search(name, url, language, mode):
         search_term = urllib.parse.quote_plus(keyb.getText())
         postData = url + "&query=" + str(search_term)
         browse_results(name, postData, language, mode)
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def browse_home(name, url, language, mode):
@@ -459,9 +478,8 @@ def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
     url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, videourl, USER_AGENT))
     addLog("url2: " + url2)
     listitem = xbmcgui.ListItem(name)
-    iconImage = "DefaultVideo.png"
     thumbnailImage = xbmc.getInfoImage("ListItem.Thumb")
-    listitem.setArt({"icon": iconImage, "thumb": thumbnailImage})
+    listitem.setArt({"icon": "DefaultVideo.png", "thumb": thumbnailImage})
     listitem.setProperty("IsPlayable", "true")
     listitem.setPath(url2)
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem)
