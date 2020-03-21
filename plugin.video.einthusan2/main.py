@@ -30,6 +30,13 @@ BASE_URL = __settings__.getSetting("base_url")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
 
 
+def addLog(message, level="notice"):
+    if level == "error":
+        xbmc.log(message, level=xbmc.LOGERROR)
+    else:
+        xbmc.log(message, level=xbmc.LOGNOTICE)
+
+
 def addDir(name, url, mode, iconimage, lang="", description="", isplayable=False):
     u = (
         sys.argv[0]
@@ -79,7 +86,7 @@ def get_params():
 
 
 def select_lang(name, url, language, mode):
-    xbmc.log("BASE_URL: " + BASE_URL, level=xbmc.LOGNOTICE)
+    addLog("BASE_URL: " + BASE_URL)
     languages = [
         "Tamil",
         "Hindi",
@@ -233,68 +240,159 @@ def menu_search(name, url, language, mode):
     if keyb.isConfirmed():
         search_term = urllib.parse.quote_plus(keyb.getText())
         postData = url + "&query=" + str(search_term)
-        scrape_videos(name, postData, language, mode)
+        browse_results(name, postData, language, mode)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+
+def browse_home(name, url, language, mode):
+    addLog("browse_home: " + url)
+    list_videos(url, "home")
+
+
+def browse_results(name, url, language, mode):
+    addLog("browse_results: " + url)
+    list_videos(url, "results")
+
+
+def list_videos(url, pattern):
+    video_list = scrape_videos(url, pattern)
+    for video_item in video_list:
+        if "http" not in video_item[4]:
+            image = "https:" + video_item[4]
+        else:
+            image = video_item[4]
+        urldata = (
+            video_item[0] + "," + video_item[1] + "," + video_item[2] + ",shd," + url
+        )
+        addDir(
+            video_item[2],
+            urldata,
+            10,
+            image,
+            video_item[0],
+            video_item[5],
+            isplayable=True,
+        )
+
+        if video_item[3] == "uhd":
+            urldata = (
+                video_item[0]
+                + ","
+                + video_item[1]
+                + ","
+                + video_item[2]
+                + ",uhd,"
+                + url
+            )
+            addDir(
+                video_item[2] + "[COLOR blue] - Ultra HD[/COLOR]",
+                urldata,
+                10,
+                image,
+                video_item[0],
+                video_item[5],
+                isplayable=True,
+            )
+
+    if video_list[0][6] != "":
+        addDir(">>> Next Page >>>", BASE_URL + video_list[0][6], 11, "")
+
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+
+def scrape_videos(url, pattern):
+    html1 = requests.get(url).text
+    results = []
+    next_page = ""
+    if pattern == "home":
+        regexstr = 'name="newrelease_tab".+?img src="(.+?)".+?href="\/movie\/watch\/(.+?)\/\?lang=(.+?)"><h2>(.+?)<\/h2>.+?i class=(.+?)<\/div>'
+    else:
+        regexstr = '<div class="block1">.*?href=".*?watch\/(.*?)\/\?lang=(.*?)".*?<img src="(.+?)".+?<h3>(.+?)<\/h3>.+?i class(.+?)<p class=".*?synopsis">(.+?)<\/p>.+?<span>Wiki<'
+    video_matches = re.findall(regexstr, html1)
+    next_matches = re.findall('data-disabled="([^"]*)" href="(.+?)"', html1)
+    if len(next_matches) > 0 and next_matches[-1][0] != "true":
+        next_page = next_matches[-1][1]
+    for item in video_matches:
+        movie_name = str(
+            item[3].replace(",", "").encode("ascii", "ignore").decode("ascii")
+        )
+        movie_def = "shd"
+        if "ultrahd" in item[4]:
+            movie_def = "uhd"
+        if pattern == "home":
+            image = item[0]
+            movie_id = item[1]
+            lang = item[2]
+            description = ""
+        else:
+            movie_id = item[0]
+            lang = item[1]
+            image = item[2]
+            try:
+                description = item[5].encode("ascii", "ignore").decode("ascii")
+            except:
+                description = ""
+        results.append(
+            (
+                str(lang),
+                str(movie_id),
+                str(movie_name),
+                str(movie_def),
+                str(image),
+                str(description),
+                str(next_page),
+            )
+        )
+    return results
 
 
 def play_video(name, url, language, mode):
     LOGIN_ENABLED = __settings__.getSetting("login_enabled")
     RETRY_KEY = __settings__.getSetting("retry_key")
-    xbmc.log("play_video: " + url, level=xbmc.LOGNOTICE)
-    xbmc.log("user_login: " + LOGIN_ENABLED, level=xbmc.LOGNOTICE)
-    xbmc.log("retry_key: " + RETRY_KEY, level=xbmc.LOGNOTICE)
+
+    addLog("play_video: " + url)
+    addLog("user_login: " + LOGIN_ENABLED)
+    addLog("retry_key: " + RETRY_KEY)
 
     s = requests.Session()
 
-    name, url, lang, hdtype, refurl = url.split(",")
+    lang, movieid, moviename, hdtype, refurl = url.split(",")
 
     if LOGIN_ENABLED == "true":
         get_loggedin_session(s, lang, refurl)
 
-    mainurl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
-    mainurlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, url, lang)
+    result = get_video(s, lang, movieid, hdtype, refurl, RETRY_KEY)
 
-    if hdtype == "uhd":
-        dialog = xbmcgui.Dialog()
-        ret1 = dialog.select(
-            "Quality Options",
-            ["Play SD/HD [Default]", "Play UHD [Premium Membership Required]"],
-            autoclose=5000,
-            preselect=0,
-        )
-        if ret1 == 1:
-            mainurl = mainurl + "&uhd=true"
-            mainurlajax = mainurlajax + "&uhd=true"
-        else:
-            pass
-    else:
-        pass
-
-    headers = {
-        "Origin": BASE_URL,
-        "Referer": BASE_URL + "/movie/browse/?lang=" + lang,
-        "User-Agent": USER_AGENT,
-    }
-    ret2 = get_video(s, lang, mainurl, mainurlajax, headers, RETRY_KEY)
-
-    if ret2 == False:
+    if result == False:
         return False
+
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
-def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
-    xbmc.log("get_video: " + str(mainurl), level=xbmc.LOGNOTICE)
+def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
+    videourl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
+    videourlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
 
-    # py_2x_3x
-    # html1 = s.get(mainurl, headers=headers, cookies=s.cookies).text
-    html1 = s.get(mainurl, headers=headers, cookies=s.cookies).text.encode("utf-8")
+    check_sorry_message = "Our servers are almost maxed"
+    check_go_premium = "Go Premium"
+
+    if hdtype == "uhd":
+        videourl = videourl + "&uhd=true"
+        videourlajax = videourlajax + "&uhd=true"
+
+    addLog("get_video: " + str(videourl))
+
+    headers = {
+        "Origin": BASE_URL,
+        "Referer": refererurl,
+        "User-Agent": USER_AGENT,
+    }
+
+    html1 = s.get(videourl, headers=headers, cookies=s.cookies).text
 
     useoldejp = 0
-    if re.search("Our servers are almost maxed", html1):
-        xbmc.log(
-            "Sorry. Our servers are almost maxed. Remaining quota is for premium members.",
-            level=xbmc.LOGERROR,
-        )
+    if re.search(check_sorry_message, html1):
+        addLog(check_sorry_message, "error")
         retry = xbmcgui.Dialog().yesno(
             "Server Error",
             "Sorry. Einthusan servers are almost maxed.",
@@ -308,11 +406,8 @@ def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
         else:
             return False
 
-    if re.search("Go Premium", html1):
-        xbmc.log(
-            "Go Premium. Please Login or Register an account then re-visit this page to continue.",
-            level=xbmc.LOGERROR,
-        )
+    if re.search(check_go_premium, html1):
+        addLog(check_go_premium, "error")
         xbmcgui.Dialog().ok(
             "UltraHD Error",
             "Premium Membership Required for UltraHD Movies.",
@@ -323,7 +418,7 @@ def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
     ejp = ""
     if useoldejp == 1:
         if oldejp == "default" or oldejp == "":
-            xbmc.log("retry failed", level=xbmc.LOGNOTICE)
+            addLog("retry failed", "error")
             xbmcgui.Dialog().yesno(
                 "Retry Failed",
                 "Better Luck Next Time",
@@ -333,18 +428,15 @@ def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
             )
             return False
         else:
-            xbmc.log("retry old_ejp using retry_key", level=xbmc.LOGNOTICE)
+            addLog("retry old_ejp")
             ejp = oldejp
     else:
-        xbmc.log("try new_ejp", level=xbmc.LOGNOTICE)
+        addLog("found new_ejp")
         ejp = re.findall("data-ejpingables=[\"'](.*?)[\"']", html1)[0]
         __settings__.setSetting("retry_key", ejp)
-        xbmc.log(
-            "retry_key updated with new_ejp for better luck next time",
-            level=xbmc.LOGNOTICE,
-        )
+        addLog("retry_key updated with new_ejp for better luck next time")
 
-    xbmc.log("using_ejp: " + ejp, level=xbmc.LOGNOTICE)
+    addLog("using_ejp: " + ejp)
     jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % ejp
     csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
     # py_2x_3x
@@ -359,13 +451,13 @@ def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
         "gorilla.csrf.Token": csrf1,
     }
 
-    rdata = s.post(mainurlajax, headers=headers, data=postdata, cookies=s.cookies).text
+    rdata = s.post(videourlajax, headers=headers, data=postdata, cookies=s.cookies).text
     ejl = json.loads(rdata)["Data"]["EJLinks"]
-    xbmc.log("base64_decodeEInth: " + str(decodeEInth(ejl)), level=xbmc.LOGNOTICE)
+    addLog("base64_decodeEInth: " + str(decodeEInth(ejl)))
     url1 = json.loads(base64.b64decode(str(decodeEInth(ejl))))["HLSLink"]
-    xbmc.log("url1: " + url1, level=xbmc.LOGNOTICE)
-    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, mainurl, USER_AGENT))
-    xbmc.log("url2: " + url2, level=xbmc.LOGNOTICE)
+    addLog("url1: " + url1)
+    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, videourl, USER_AGENT))
+    addLog("url2: " + url2)
     listitem = xbmcgui.ListItem(name)
     iconImage = "DefaultVideo.png"
     thumbnailImage = xbmc.getInfoImage("ListItem.Thumb")
@@ -380,7 +472,7 @@ def get_video(s, language, mainurl, mainurlajax, headers=None, oldejp=""):
 def get_loggedin_session(s, language, refererurl):
     LOGIN_USERNAME = __settings__.getSetting("login_username")
     LOGIN_PASSWORD = __settings__.getSetting("login_password")
-    xbmc.log("get_loggedin_session: " + refererurl, level=xbmc.LOGNOTICE)
+    addLog("get_loggedin_session: " + refererurl)
 
     headers = {
         "Origin": BASE_URL,
@@ -392,9 +484,7 @@ def get_loggedin_session(s, language, refererurl):
         BASE_URL + "/login/?lang=" + language, headers=headers, allow_redirects=False,
     ).text
 
-    # py_2x_3x
-    # csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
-    csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1.encode("utf-8"))[0]
+    csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
 
     if "&#43;" in csrf1:
         csrf1 = csrf1.replace("&#43;", "+")
@@ -431,9 +521,7 @@ def get_loggedin_session(s, language, refererurl):
         cookies=s.cookies,
     ).text
 
-    # py_2x_3x
-    # csrf3 = re.findall("data-pageid=[\"'](.*?)[\"']", html3)[0]
-    csrf3 = re.findall("data-pageid=[\"'](.*?)[\"']", html3.encode("utf-8"))[0]
+    csrf3 = re.findall("data-pageid=[\"'](.*?)[\"']", html3)[0]
 
     postdata4 = {
         "xEvent": "notify",
@@ -452,64 +540,6 @@ def get_loggedin_session(s, language, refererurl):
     )
 
     return s
-
-
-def menu_featured(name, url, language, mode):
-    xbmc.log("menu_featured: " + url, level=xbmc.LOGNOTICE)
-    html1 = requests.get(url).text
-    matches = re.compile(
-        'name="newrelease_tab".+?img src="(.+?)".+?href="\/movie\/watch\/(.+?)\/\?lang=(.+?)"><h2>(.+?)<\/h2>.+?i class=(.+?)<\/div>'
-    ).findall(html1)
-
-    for img, movieid, lang, name, ishd in matches:
-        description = ""
-        if "http" not in img:
-            image = "https:" + img
-        else:
-            image = img
-
-        name = str(name.replace(",", "").encode("ascii", "ignore").decode("ascii"))
-        if "ultrahd" in ishd:
-            title = name + "[COLOR blue] - Ultra HD[/COLOR]"
-            urldata = str(name) + "," + str(movieid) + "," + lang + ",uhd," + url
-        else:
-            title = name
-            urldata = str(name) + "," + str(movieid) + "," + lang + ",shd," + url
-
-        addDir(title, urldata, 10, image, lang, description, isplayable=True)
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-
-
-def scrape_videos(name, url, language, mode):
-    xbmc.log("scrape_videos: " + url, level=xbmc.LOGNOTICE)
-    html1 = requests.get(url).text
-    matches = re.compile(
-        '<div class="block1">.*?href=".*?watch\/(.*?)\/\?lang=(.*?)".*?<img src="(.+?)".+?<h3>(.+?)<\/h3>.+?i class(.+?)<p class=".*?synopsis">(.+?)<\/p>.+?<span>Wiki<'
-    ).findall(html1)
-    nextpage = re.findall('data-disabled="([^"]*)" href="(.+?)"', html1)[-1]
-    for movieid, lang, img, name, ishd, synopsis in matches:
-        description = ""
-        if "http" not in img:
-            image = "https:" + img
-        else:
-            image = img
-
-        name = str(name.replace(",", "").encode("ascii", "ignore").decode("ascii"))
-        if "ultrahd" in ishd:
-            title = name + "[COLOR blue] - Ultra HD[/COLOR]"
-            urldata = str(name) + "," + str(movieid) + "," + lang + ",uhd," + url
-        else:
-            title = name
-            urldata = str(name) + "," + str(movieid) + "," + lang + ",shd," + url
-        try:
-            description = synopsis.encode("ascii", "ignore").decode("ascii")
-        except:
-            description = ""
-        addDir(title, urldata, 10, image, lang, description, isplayable=True)
-    if nextpage[0] != "true":
-        nextPage_Url = BASE_URL + nextpage[1]
-        addDir(">>> Next Page >>>", nextPage_Url, 11, "", "")
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def decodeEInth(lnk):
@@ -557,7 +587,7 @@ function_map = {}
 function_map[0] = select_lang
 function_map[1] = select_menu
 function_map[2] = select_settings
-function_map[3] = menu_featured
+function_map[3] = browse_home
 function_map[4] = menu_alpha
 function_map[5] = menu_years
 function_map[6] = submenu_decade
@@ -565,6 +595,6 @@ function_map[7] = submenu_years
 function_map[8] = menu_rating
 function_map[9] = menu_search
 function_map[10] = play_video
-function_map[11] = scrape_videos
+function_map[11] = browse_results
 
 function_map[mode](name, url, language, mode)
