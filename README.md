@@ -17,7 +17,7 @@
 * Install `repository.eintamil-1.0.0.zip`
 * Complete Add-on repository installation
 
-#### Steps to install add-on:
+#### Steps to install add-ons:
 * Go to "System Settings" > "Addons" > "Install from repository"
 * Click "EinTamil Kodi Repository" > "Video add-ons"
 * Click "Einthusan"
@@ -26,8 +26,16 @@
 * Click "Install"
 * Click "OK"
 
+#### Steps to update add-ons:
+* Go to "System Settings" > "Addons" > "Install from repository"
+* Click "EinTamil Kodi Repository" > "Add-on repository"
+* Right Click "EinTamil Kodi Repository"
+* Click "Check for updates"
+* This should also auto-update the video add-ons installed from this repository
+
 #### For bugs, enhancements, or other requests [create an issue](https://github.com/eintamil/repository.eintamil/issues)
 
 ### :-)
+
 ---
 Credits: https://github.com/reasonsrepo/
