@@ -34,7 +34,7 @@ def addLog(message, level="notice"):
     if level == "error":
         xbmc.log(str(message), level=xbmc.LOGERROR)
     else:
-        xbmc.log(str(message), level=xbmc.LOGNOTICE)
+        xbmc.log(str(message), level=xbmc.LOGINFO)
 
 
 def addDir(name, url, mode, image, lang="", description="", isplayable=False):
