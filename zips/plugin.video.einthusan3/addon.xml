@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.einthusan3" name="Einthusan" version="3.0.9" provider-name="EinTamil">
+<addon id="plugin.video.einthusan3" name="Einthusan" version="3.0.9-rc1" provider-name="EinTamil">
     <requires>
         <import addon="repository.eintamil" version="1.0.0"/>
         <import addon="xbmc.python" version="3.0.0"/>
-        <import addon="script.module.requests" version="2.22.0.1" />
+        <import addon="script.module.requests" version="2.22.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>
