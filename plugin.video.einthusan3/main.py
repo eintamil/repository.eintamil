@@ -108,8 +108,7 @@ def select_lang(name, url, language, mode):
         addLog("check BASE_URL", "error")
         xbmcgui.Dialog().ok(
             "Base URL Error",
-            "Please check Base URL in Addon Settings",
-            "Please restart the addon after editing Base URL",
+            "Please check and update the Base URL in Addon Settings and restart the addon.",
         )
     for lang_item in languages:
         lang = str(lang_item[0])
@@ -427,8 +426,7 @@ def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
         addLog(check_sorry_message, "error")
         retry = xbmcgui.Dialog().yesno(
             "Server Error",
-            "Sorry. Einthusan servers are almost maxed.",
-            "Please try again in 5 - 10 mins or upgrade to a Lifetime Premium account.",
+            "Sorry. Einthusan servers are almost maxed. Please try later or upgrade to Premium account.",
             yeslabel="Retry",
             nolabel="Close",
             autoclose=5000,
@@ -441,8 +439,7 @@ def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
     if re.search(check_go_premium, html1):
         addLog(check_go_premium, "error")
         xbmcgui.Dialog().ok(
-            "UltraHD Error",
-            "Premium Membership Required for UltraHD Movies.",
+            "UltraHD Error - Premium Required",
             "Please add Premium Membership Login details in Addon Settings.",
         )
         return False
