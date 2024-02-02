@@ -15,7 +15,7 @@
 #### Steps to add repository:
 * Go to "System Settings" > "Addons" > "Install from zip file" > "EinTamil"
 * Install `repository.eintamil-1.0.0.zip`
-* Complete Add-on repository installation
+* Complete Add-on repository installation a
 
 #### Steps to install add-ons:
 * Go to "System Settings" > "Addons" > "Install from repository"
