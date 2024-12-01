@@ -1,3 +1,5 @@
+_internal/
+
 # MacOS
 .DS_Store
 # Ansible

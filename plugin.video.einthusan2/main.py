@@ -108,8 +108,7 @@ def select_lang(name, url, language, mode):
         addLog("check BASE_URL", "error")
         xbmcgui.Dialog().ok(
             "Base URL Error",
-            "Please check Base URL in Addon Settings",
-            "Please restart the addon after editing Base URL",
+            "Please check and update the Base URL in Addon Settings and restart the addon.",
         )
     for lang_item in languages:
         lang = str(lang_item[0])
@@ -401,12 +400,12 @@ def play_video(name, url, language, mode):
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
-def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
+def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
     videourl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
     videourlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
 
-    check_sorry_message = "Our servers are almost maxed"
     check_go_premium = "Go Premium"
+    check_sorry_message = "SERVERS ARE ALMOST AT CAPACITY"
 
     if hdtype == "uhd":
         videourl = videourl + "&uhd=true"
@@ -422,51 +421,45 @@ def get_video(s, language, movieid, hdtype, refererurl, oldejp=""):
 
     html1 = s.get(videourl, headers=headers, cookies=s.cookies).text
 
-    useoldejp = 0
-    if re.search(check_sorry_message, html1):
-        addLog(check_sorry_message, "error")
-        retry = xbmcgui.Dialog().yesno(
-            "Server Error",
-            "Sorry. Einthusan servers are almost maxed.",
-            "Please try again in 5 - 10 mins or upgrade to a Lifetime Premium account.",
-            yeslabel="Retry",
-            nolabel="Close",
-            autoclose=5000,
-        )
-        if retry == True:
-            useoldejp = 1
-        else:
-            return False
-
     if re.search(check_go_premium, html1):
         addLog(check_go_premium, "error")
         xbmcgui.Dialog().ok(
-            "UltraHD Error",
-            "Premium Membership Required for UltraHD Movies.",
+            "UltraHD Error - Premium Required",
             "Please add Premium Membership Login details in Addon Settings.",
         )
         return False
 
     ejp = ""
-    if useoldejp == 1:
-        if oldejp == "default" or oldejp == "":
-            addLog("retry failed", "error")
+    if re.search(check_sorry_message, html1):
+        addLog(check_sorry_message, "error")
+        if defaultejp == "default":
+            addLog("no old_ejp", "error")
+            retry = xbmcgui.Dialog().yesno(
+                "Server Error",
+                "Einthusan servers are busy. Please try later or upgrade to Premium account.",
+                yeslabel="Retry",
+                nolabel="Close",
+                autoclose=5000,
+            )
+            return False
+        else:
+            addLog("use old_ejp")
+            ejp = defaultejp
+    else:
+        ejp = re.findall("data-ejpingables=[\"'](.*?)[\"']", html1)[0]
+        if ejp == "":
+            addLog("no new_ejp", "error")
             xbmcgui.Dialog().yesno(
-                "Retry Failed",
-                "Better Luck Next Time",
+                "Loading Failed",
+                "Please try after some time",
                 yeslabel="OK",
                 nolabel="Close",
                 autoclose=5000,
             )
             return False
         else:
-            addLog("retry old_ejp")
-            ejp = oldejp
-    else:
-        addLog("found new_ejp")
-        ejp = re.findall("data-ejpingables=[\"'](.*?)[\"']", html1)[0]
-        __settings__.setSetting("retry_key", ejp)
-        addLog("retry_key updated with new_ejp for better luck next time")
+            addLog("found new_ejp")
+            __settings__.setSetting("retry_key", ejp)
 
     addLog("using_ejp: " + ejp)
     jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % ejp
@@ -512,7 +505,9 @@ def get_loggedin_session(s, language, refererurl):
     }
 
     html1 = s.get(
-        BASE_URL + "/login/?lang=" + language, headers=headers, allow_redirects=False,
+        BASE_URL + "/login/?lang=" + language,
+        headers=headers,
+        allow_redirects=False,
     ).text
 
     csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
