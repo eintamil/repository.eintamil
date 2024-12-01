@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+   <category label="General">
+      <setting type="lsep" label="Login"/>
+      <setting type="bool" label="Account Login" id="login_enabled" default="false" />
+      <setting subsetting="true" type="text" label="Username" id="login_username" enable="eq(-1,true)" default="" />
+      <setting subsetting="true" type="text" label="Password" id="login_password" option="hidden" enable="eq(-2,true)+!eq(-1,)" default="" />
+      <setting type="lsep" label="Advanced Settings: Please restart the addon after editing Base URL"/>
+      <setting type="text" label="Base URL" id="base_url" default="https://einthusan.tv" />
+      <setting type="text" id="retry_key" visible="false" default="default" />
+   </category>
+</settings>
