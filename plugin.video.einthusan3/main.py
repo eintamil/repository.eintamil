@@ -27,7 +27,7 @@ __settings__ = xbmcaddon.Addon(id="plugin.video.einthusan3")
 # __settings__ = xbmcaddon.Addon(id="plugin.video.einthusan2")
 
 BASE_URL = __settings__.getSetting("base_url")
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 
 def addLog(message, level="notice"):
@@ -401,17 +401,10 @@ def play_video(name, url, language, mode):
 
 
 def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
-    videourl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
-    videourlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
+    video_url = "/movie/watch/%s/?lang=%s" % (movieid, language)
 
     check_go_premium = "Go Premium"
     check_sorry_message = "SERVERS ARE ALMOST AT CAPACITY"
-
-    if hdtype == "uhd":
-        videourl = videourl + "&uhd=true"
-        videourlajax = videourlajax + "&uhd=true"
-
-    addLog("get_video: " + str(videourl))
 
     headers = {
         "Origin": BASE_URL,
@@ -419,7 +412,18 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
         "User-Agent": USER_AGENT,
     }
 
-    html1 = s.get(videourl, headers=headers, cookies=s.cookies).text
+    check_premium = s.get(BASE_URL + video_url, headers=headers, cookies=s.cookies, allow_redirects=False)
+    if check_premium.status_code in [301, 302, 307, 308]:
+        addLog("check_premium: " + str(check_premium.status_code))
+        addLog("redirect_location: " + check_premium.headers["location"])
+        video_url = "/premium" + video_url
+
+    if hdtype == "uhd":
+        video_url = video_url + "&uhd=true"
+
+    addLog("get_video: " + str(video_url))
+
+    html1 = s.get(BASE_URL + video_url, headers=headers, cookies=s.cookies).text
 
     if re.search(check_go_premium, html1):
         addLog(check_go_premium, "error")
@@ -476,12 +480,12 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
         "gorilla.csrf.Token": csrf1,
     }
 
-    rdata = s.post(videourlajax, headers=headers, data=postdata, cookies=s.cookies).text
+    rdata = s.post(BASE_URL + "/ajax" + video_url, headers=headers, data=postdata, cookies=s.cookies).text
     ejl = json.loads(rdata)["Data"]["EJLinks"]
     addLog("base64_decodeEInth: " + str(decodeEInth(ejl)))
     url1 = json.loads(base64.b64decode(str(decodeEInth(ejl))))["HLSLink"]
     addLog("url1: " + url1)
-    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, videourl, USER_AGENT))
+    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, video_url, USER_AGENT))
     addLog("url2: " + url2)
     listitem = xbmcgui.ListItem(name)
     thumbnailImage = xbmc.getInfoImage("ListItem.Thumb")
