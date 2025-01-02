@@ -14,15 +14,15 @@
 
 #### Steps to add repository:
 * Go to "System Settings" > "Addons" > "Install from zip file" > "EinTamil"
-* Install `repository.eintamil-1.0.0.zip`
+* Install `repository.eintamil-1.1.0.zip`
 * Complete Add-on repository installation
 
 #### Steps to install add-ons:
 * Go to "System Settings" > "Addons" > "Install from repository"
 * Click "EinTamil Kodi Repository" > "Video add-ons"
 * Click "Einthusan"
-  * Use "Einthusan Video Addon - Version 2.x" for Kodi 18.x (xbmc.python 2.x)
-  * Use "Einthusan Video Addon - Version 3.x" for Kodi 19.x (xbmc.python 3.x)
+  * Use "Einthusan Video Addon - Version 3.x" for Kodi 19+ (xbmc.python 3.x)
+  * Use "Einthusan Video Addon - Version 2.x" for Kodi 18 or Older Versions (xbmc.python 2.x)
 * Click "Install"
 * Click "OK"
 
