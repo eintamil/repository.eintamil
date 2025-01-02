@@ -7,6 +7,7 @@
       <setting subsetting="true" type="text" label="Password" id="login_password" option="hidden" enable="eq(-2,true)+!eq(-1,)" default="" />
       <setting type="lsep" label="Advanced Settings: Please restart the addon after editing Base URL"/>
       <setting type="text" label="Base URL" id="base_url" default="https://einthusan.tv" />
+      <setting type="bool" label="Debug Logging" id="log_level_debug" default="false" />
       <setting type="text" id="retry_key" visible="false" default="default" />
    </category>
 </settings>

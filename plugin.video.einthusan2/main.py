@@ -12,32 +12,23 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 
-# py_2x_3x
-# import html
-# import urllib.error
-# import urllib.parse
-# import urllib.request
-
-# py_2x_3x
 import HTMLParser
 from six.moves import urllib
 
-# py_2x_3x
-# __settings__ = xbmcaddon.Addon(id="plugin.video.einthusan3")
-__settings__ = xbmcaddon.Addon(id="plugin.video.einthusan2")
-
-BASE_URL = __settings__.getSetting("base_url")
+ADDON = xbmcaddon.Addon(id="plugin.video.einthusan2")
+BASE_URL = ADDON.getSetting("base_url")
+DEBUG_LOG = ADDON.getSetting("log_level_debug")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
 
 
-def addLog(message, level="notice"):
+def add_log(message, level="notice"):
     if level == "error":
         xbmc.log(str(message), level=xbmc.LOGERROR)
     else:
         xbmc.log(str(message), level=xbmc.LOGNOTICE)
 
 
-def addDir(name, url, mode, image, lang="", description="", isplayable=False):
+def add_dir_item(name, url, mode, image, lang="", description="", isplayable=False):
     u = (
         sys.argv[0]
         + "?url="
@@ -85,7 +76,7 @@ def get_params():
 
 
 def select_lang(name, url, language, mode):
-    addLog("BASE_URL: " + BASE_URL)
+    add_log("base_url: " + BASE_URL)
     languages = [
         ("tamil", "", "Tamil"),
         ("hindi", "", "Hindi"),
@@ -101,11 +92,11 @@ def select_lang(name, url, language, mode):
         html1 = requests.get(BASE_URL).text
         lang_matches = re.findall(lang_pattern, html1)
         if len(lang_matches) == 0:
-            addLog("check lang_pattern", "error")
+            add_log("check lang_pattern", "error")
         else:
             languages = lang_matches
     except:
-        addLog("check BASE_URL", "error")
+        add_log("check base_url", "error")
         xbmcgui.Dialog().ok(
             "Base URL Error",
             "Please check and update the Base URL in Addon Settings and restart the addon.",
@@ -117,63 +108,63 @@ def select_lang(name, url, language, mode):
             image = "https://" + str(lang_item[1])
         else:
             image = ""
-        addDir(title, "", 1, image, lang)
-    addDir("Addon Settings", "", 2, "DefaultAddonService.png", "")
+        add_dir_item(title, "", 1, image, lang)
+    add_dir_item("Addon Settings", "", 2, "DefaultAddonService.png", "")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def select_menu(name, url, language, mode):
     postData = "lang=" + language
-    addDir(
+    add_dir_item(
         "Featured",
         BASE_URL + "/movie/browse/?" + postData,
         3,
         "DefaultAddonsRecentlyUpdated.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Recently Added",
         BASE_URL + "/movie/results/?find=Recent&" + postData,
         11,
         "DefaultRecentlyAddedMovies.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Most Watched",
         BASE_URL + "/movie/results/?find=Popularity&ptype=View&tp=l30d&" + postData,
         11,
         "DefaultMovies.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Staff Picks",
         BASE_URL + "/movie/results/?find=StaffPick&" + postData,
         11,
         "DefaultDirector.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "A-Z",
         BASE_URL + "/movie/results/?" + postData,
         4,
         "DefaultMovieTitle.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Year",
         BASE_URL + "/movie/results/?" + postData,
         5,
         "DefaultYear.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Rating",
         BASE_URL + "/movie/results/?" + postData,
         8,
         "DefaultGenre.png",
         language,
     )
-    addDir(
+    add_dir_item(
         "Search",
         BASE_URL + "/movie/results/?" + postData,
         9,
@@ -184,20 +175,20 @@ def select_menu(name, url, language, mode):
 
 
 def select_settings(name, url, language, mode):
-    __settings__.openSettings()
+    ADDON.openSettings()
 
 
 def menu_alpha(name, url, language, mode):
-    addDir("Numbers", url + "&find=Numbers", 11, "")
+    add_dir_item("Numbers", url + "&find=Numbers", 11, "")
     azlist = map(chr, list(range(65, 91)))
     for letter in azlist:
-        addDir(letter, url + "&find=Alphabets&alpha=" + letter, 11, "")
+        add_dir_item(letter, url + "&find=Alphabets&alpha=" + letter, 11, "")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def menu_years(name, url, language, mode):
-    addDir("Decade", url, 6, "DefaultYear.png")
-    addDir("Years", url, 7, "DefaultYear.png")
+    add_dir_item("Decade", url, 6, "DefaultYear.png")
+    add_dir_item("Years", url, 7, "DefaultYear.png")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
@@ -208,7 +199,7 @@ def submenu_decade(name, url, language, mode):
     ]
     for attr_value in values:
         if attr_value != None:
-            addDir(
+            add_dir_item(
                 str(attr_value) + "s", postData + str(attr_value), 11, "DefaultYear.png"
             )
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -221,37 +212,37 @@ def submenu_years(name, url, language, mode):
     ]
     for attr_value in values:
         if attr_value != None:
-            addDir(attr_value, postData + str(attr_value), 11, "DefaultYear.png")
+            add_dir_item(attr_value, postData + str(attr_value), 11, "DefaultYear.png")
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def menu_rating(name, url, language, mode):
     postData = url + "&find=Rating"
-    addDir(
+    add_dir_item(
         "Action (4+ stars)",
         postData + "&action=4&comedy=0&romance=0&storyline=0&performance=0&ratecount=1",
         11,
         "",
     )
-    addDir(
+    add_dir_item(
         "Comedy (4+ stars)",
         postData + "&action=0&comedy=4&romance=0&storyline=0&performance=0&ratecount=1",
         11,
         "",
     )
-    addDir(
+    add_dir_item(
         "Romance (4+ stars)",
         postData + "&action=0&comedy=0&romance=4&storyline=0&performance=0&ratecount=1",
         11,
         "",
     )
-    addDir(
+    add_dir_item(
         "Storyline (4+ stars)",
         postData + "&action=0&comedy=0&romance=0&storyline=4&performance=0&ratecount=1",
         11,
         "",
     )
-    addDir(
+    add_dir_item(
         "Performance (4+ stars)",
         postData + "&action=0&comedy=0&romance=0&storyline=0&performance=4&ratecount=1",
         11,
@@ -270,12 +261,12 @@ def menu_search(name, url, language, mode):
 
 
 def browse_home(name, url, language, mode):
-    addLog("browse_home: " + url)
+    add_log("browse_home: " + url)
     list_videos(url, "home")
 
 
 def browse_results(name, url, language, mode):
-    addLog("browse_results: " + url)
+    add_log("browse_results: " + url)
     list_videos(url, "results")
 
 
@@ -295,7 +286,7 @@ def list_videos(url, pattern):
         urldata = (
             video_item[0] + "," + video_item[1] + "," + video_item[2] + ",shd," + url
         )
-        addDir(
+        add_dir_item(
             video_item[2],
             urldata,
             10,
@@ -315,7 +306,7 @@ def list_videos(url, pattern):
                 + ",uhd,"
                 + url
             )
-            addDir(
+            add_dir_item(
                 video_item[2] + "[COLOR blue] - Ultra HD[/COLOR]",
                 urldata,
                 10,
@@ -326,7 +317,7 @@ def list_videos(url, pattern):
             )
 
     if video_list[-1][6] != "":
-        addDir(">>> Next Page >>>", BASE_URL + video_list[-1][6], 11, "")
+        add_dir_item(">>> Next Page >>>", BASE_URL + video_list[-1][6], 11, "")
 
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -378,12 +369,12 @@ def scrape_videos(url, pattern):
 
 
 def play_video(name, url, language, mode):
-    LOGIN_ENABLED = __settings__.getSetting("login_enabled")
-    RETRY_KEY = __settings__.getSetting("retry_key")
+    LOGIN_ENABLED = ADDON.getSetting("login_enabled")
+    RETRY_KEY = ADDON.getSetting("retry_key")
 
-    addLog("play_video: " + url)
-    addLog("user_login: " + LOGIN_ENABLED)
-    addLog("retry_key: " + RETRY_KEY)
+    add_log("play_video: " + url)
+    add_log("user_login: " + LOGIN_ENABLED)
+    add_log("retry_key: " + RETRY_KEY, "debug")
 
     s = requests.Session()
 
@@ -401,17 +392,10 @@ def play_video(name, url, language, mode):
 
 
 def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
-    videourl = "%s/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
-    videourlajax = "%s/ajax/movie/watch/%s/?lang=%s" % (BASE_URL, movieid, language)
+    video_url = "/movie/watch/%s/?lang=%s" % (movieid, language)
 
     check_go_premium = "Go Premium"
     check_sorry_message = "SERVERS ARE ALMOST AT CAPACITY"
-
-    if hdtype == "uhd":
-        videourl = videourl + "&uhd=true"
-        videourlajax = videourlajax + "&uhd=true"
-
-    addLog("get_video: " + str(videourl))
 
     headers = {
         "Origin": BASE_URL,
@@ -419,10 +403,23 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
         "User-Agent": USER_AGENT,
     }
 
-    html1 = s.get(videourl, headers=headers, cookies=s.cookies).text
+    check_premium = s.get(
+        BASE_URL + video_url, headers=headers, cookies=s.cookies, allow_redirects=False
+    )
+    if check_premium.status_code in [301, 302, 307, 308]:
+        add_log("check_premium: " + str(check_premium.status_code), "debug")
+        add_log("redirect_location: " + check_premium.headers["location"], "debug")
+        video_url = "/premium" + video_url
+
+    if hdtype == "uhd":
+        video_url = video_url + "&uhd=true"
+
+    add_log("get_video: " + str(video_url))
+
+    html1 = s.get(BASE_URL + video_url, headers=headers, cookies=s.cookies).text
 
     if re.search(check_go_premium, html1):
-        addLog(check_go_premium, "error")
+        add_log("go_premium: " + check_go_premium, "error")
         xbmcgui.Dialog().ok(
             "UltraHD Error - Premium Required",
             "Please add Premium Membership Login details in Addon Settings.",
@@ -431,9 +428,9 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
 
     ejp = ""
     if re.search(check_sorry_message, html1):
-        addLog(check_sorry_message, "error")
+        add_log("sorry: " + check_sorry_message, "error")
         if defaultejp == "default":
-            addLog("no old_ejp", "error")
+            add_log("no old_ejp", "error")
             retry = xbmcgui.Dialog().yesno(
                 "Server Error",
                 "Einthusan servers are busy. Please try later or upgrade to Premium account.",
@@ -443,12 +440,12 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
             )
             return False
         else:
-            addLog("use old_ejp")
+            add_log("use old_ejp")
             ejp = defaultejp
     else:
         ejp = re.findall("data-ejpingables=[\"'](.*?)[\"']", html1)[0]
         if ejp == "":
-            addLog("no new_ejp", "error")
+            add_log("no new_ejp", "error")
             xbmcgui.Dialog().yesno(
                 "Loading Failed",
                 "Please try after some time",
@@ -458,15 +455,14 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
             )
             return False
         else:
-            addLog("found new_ejp")
-            __settings__.setSetting("retry_key", ejp)
+            add_log("found new_ejp")
+            ADDON.setSetting("retry_key", ejp)
 
-    addLog("using_ejp: " + ejp)
+    add_log("using_ejp: " + ejp, "debug")
     jdata = '{"EJOutcomes":"%s","NativeHLS":false}' % ejp
     csrf1 = re.findall("data-pageid=[\"'](.*?)[\"']", html1)[0]
-    # py_2x_3x
-    # csrf1 = html.unescape(csrf1)
     csrf1 = HTMLParser.HTMLParser().unescape(csrf1).encode("utf-8")
+    add_log("csrf1: " + csrf1, "debug")
 
     postdata = {
         "xEvent": "UIVideoPlayer.PingOutcome",
@@ -476,13 +472,19 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
         "gorilla.csrf.Token": csrf1,
     }
 
-    rdata = s.post(videourlajax, headers=headers, data=postdata, cookies=s.cookies).text
+    rdata = s.post(
+        BASE_URL + "/ajax" + video_url,
+        headers=headers,
+        data=postdata,
+        cookies=s.cookies,
+    ).text
+
     ejl = json.loads(rdata)["Data"]["EJLinks"]
-    addLog("base64_decodeEInth: " + str(decodeEInth(ejl)))
+    add_log("base64_decodeEInth: " + str(decodeEInth(ejl)), "debug")
     url1 = json.loads(base64.b64decode(str(decodeEInth(ejl))))["HLSLink"]
-    addLog("url1: " + url1)
-    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, videourl, USER_AGENT))
-    addLog("url2: " + url2)
+    add_log("url1: " + url1, "debug")
+    url2 = url1 + ("|%s&Referer=%s&User-Agent=%s" % (BASE_URL, video_url, USER_AGENT))
+    add_log("url2: " + url2, "debug")
     listitem = xbmcgui.ListItem(name)
     thumbnailImage = xbmc.getInfoImage("ListItem.Thumb")
     listitem.setArt({"icon": "DefaultVideo.png", "thumb": thumbnailImage})
@@ -494,9 +496,9 @@ def get_video(s, language, movieid, hdtype, refererurl, defaultejp="default"):
 
 
 def get_loggedin_session(s, language, refererurl):
-    LOGIN_USERNAME = __settings__.getSetting("login_username")
-    LOGIN_PASSWORD = __settings__.getSetting("login_password")
-    addLog("get_loggedin_session: " + refererurl)
+    LOGIN_USERNAME = ADDON.getSetting("login_username")
+    LOGIN_PASSWORD = ADDON.getSetting("login_password")
+    add_log("get_loggedin_session: " + refererurl)
 
     headers = {
         "Origin": BASE_URL,
@@ -575,52 +577,52 @@ def decodeEInth(lnk):
     return r
 
 
-### main starts here
-params = get_params()
-url = ""
-name = ""
-mode = 0
-language = ""
-description = ""
+if __name__ == "__main__":
+    params = get_params()
+    url = ""
+    name = ""
+    mode = 0
+    language = ""
+    description = ""
 
-try:
-    url = urllib.parse.unquote_plus(params["url"])
-except:
-    pass
+    try:
+        url = urllib.parse.unquote_plus(params["url"])
+    except:
+        pass
 
-try:
-    name = urllib.parse.unquote_plus(params["name"])
-except:
-    pass
+    try:
+        name = urllib.parse.unquote_plus(params["name"])
+    except:
+        pass
 
-try:
-    mode = int(params["mode"])
-except:
-    pass
+    try:
+        mode = int(params["mode"])
+    except:
+        pass
 
-try:
-    language = urllib.parse.unquote_plus(params["lang"])
-except:
-    pass
+    try:
+        language = urllib.parse.unquote_plus(params["lang"])
+    except:
+        pass
 
-try:
-    description = urllib.parse.unquote_plus(params["description"])
-except:
-    pass
+    try:
+        description = urllib.parse.unquote_plus(params["description"])
+    except:
+        pass
 
-function_map = {}
+    function_map = {}
 
-function_map[0] = select_lang
-function_map[1] = select_menu
-function_map[2] = select_settings
-function_map[3] = browse_home
-function_map[4] = menu_alpha
-function_map[5] = menu_years
-function_map[6] = submenu_decade
-function_map[7] = submenu_years
-function_map[8] = menu_rating
-function_map[9] = menu_search
-function_map[10] = play_video
-function_map[11] = browse_results
+    function_map[0] = select_lang
+    function_map[1] = select_menu
+    function_map[2] = select_settings
+    function_map[3] = browse_home
+    function_map[4] = menu_alpha
+    function_map[5] = menu_years
+    function_map[6] = submenu_decade
+    function_map[7] = submenu_years
+    function_map[8] = menu_rating
+    function_map[9] = menu_search
+    function_map[10] = play_video
+    function_map[11] = browse_results
 
-function_map[mode](name, url, language, mode)
+    function_map[mode](name, url, language, mode)
