@@ -2,8 +2,7 @@ _internal/
 
 # MacOS
 .DS_Store
-# Ansible
-*.retry
+
 # VisualStudioCode
 .vscode/*
 !.vscode/settings.json
