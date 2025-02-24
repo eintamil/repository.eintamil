@@ -22,6 +22,8 @@ BASE_URL = ADDON.getSetting("base_url")
 DEBUG_LOG = ADDON.getSetting("log_level_debug")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
+languages = []
+
 
 def add_log(message, level="notice"):
     if level == "error":
@@ -82,8 +84,9 @@ def get_params():
     return param
 
 
-def select_lang(name, url, language, mode):
+def check_baseurl_languages():
     add_log("base_url: " + BASE_URL)
+    global languages
     languages = [
         ("tamil", "", "Tamil"),
         ("hindi", "", "Hindi"),
@@ -102,12 +105,17 @@ def select_lang(name, url, language, mode):
             add_log("check lang_pattern", "error")
         else:
             languages = lang_matches
+        return True
     except:
         add_log("check base_url", "error")
         xbmcgui.Dialog().ok(
             "Base URL Error",
             "Please check and update the Base URL in Addon Settings and restart the addon.",
         )
+        return False
+
+
+def select_lang(name, url, language, mode):
     for lang_item in languages:
         lang = str(lang_item[0])
         title = str(lang_item[2])
@@ -277,44 +285,43 @@ def browse_results(name, url, language, mode):
     list_videos(url, "results")
 
 
-def list_videos(url, pattern):
+def search_all_lang(name, url, language, mode):
+    add_log("search_all_lang: " + name)
+    for idx, lang_item in enumerate(languages):
+        append = True
+        if idx == len(languages) - 1:
+            append = False
+        list_videos(
+            BASE_URL + "/movie/results/?" + "lang=" + str(lang_item[0]) + "&query=" + str(name),
+            "results",
+            max_items=3,
+            add_next_page_item=False,
+            append=append
+        )
+
+
+def list_videos(url, pattern, max_items=-1, add_next_page_item=True, append=False):
+    add_log("list_videos: " + url)
     video_list = scrape_videos(url, pattern)
 
-    if video_list[-1][6] != "":
-        next_page_list = scrape_videos(BASE_URL + video_list[-1][6], pattern)
-        for next_page_item in next_page_list:
-            video_list.append(next_page_item)
+    if video_list:
+        if video_list[-1][6] != "":
+            next_page_list = scrape_videos(BASE_URL + video_list[-1][6], pattern)
+            for next_page_item in next_page_list:
+                video_list.append(next_page_item)
 
-    for video_item in video_list:
-        if "http" not in video_item[4]:
-            image = "https:" + video_item[4]
-        else:
-            image = video_item[4]
-        urldata = (
-            video_item[0] + "," + video_item[1] + "," + video_item[2] + ",shd," + url
-        )
-        add_dir_item(
-            video_item[2],
-            urldata,
-            10,
-            image,
-            video_item[0],
-            video_item[5],
-            isplayable=True,
-        )
-
-        if video_item[3] == "uhd":
+        for idx, video_item in enumerate(video_list):
+            if max_items > 0 and idx == max_items:
+                break
+            if "http" not in video_item[4]:
+                image = "https:" + video_item[4]
+            else:
+                image = video_item[4]
             urldata = (
-                video_item[0]
-                + ","
-                + video_item[1]
-                + ","
-                + video_item[2]
-                + ",uhd,"
-                + url
+                video_item[0] + "," + video_item[1] + "," + video_item[2] + ",shd," + url
             )
             add_dir_item(
-                video_item[2] + "[COLOR blue] - Ultra HD[/COLOR]",
+                video_item[2],
                 urldata,
                 10,
                 image,
@@ -323,10 +330,31 @@ def list_videos(url, pattern):
                 isplayable=True,
             )
 
-    if video_list[-1][6] != "":
-        add_dir_item(">>> Next Page >>>", BASE_URL + video_list[-1][6], 11, "")
+            if video_item[3] == "uhd":
+                urldata = (
+                    video_item[0]
+                    + ","
+                    + video_item[1]
+                    + ","
+                    + video_item[2]
+                    + ",uhd,"
+                    + url
+                )
+                add_dir_item(
+                    video_item[2] + "[COLOR blue] - Ultra HD[/COLOR]",
+                    urldata,
+                    10,
+                    image,
+                    video_item[0],
+                    video_item[5],
+                    isplayable=True,
+                )
 
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+        if add_next_page_item and video_list[-1][6] != "":
+            add_dir_item(">>> Next Page >>>", BASE_URL + video_list[-1][6], 11, "")
+
+    if not append:
+        xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 
 def scrape_videos(url, pattern):
@@ -631,5 +659,7 @@ if __name__ == "__main__":
     function_map[9] = menu_search
     function_map[10] = play_video
     function_map[11] = browse_results
+    function_map[12] = search_all_lang
 
-    function_map[mode](name, url, language, mode)
+    if check_baseurl_languages():
+        function_map[mode](name, url, language, mode)
