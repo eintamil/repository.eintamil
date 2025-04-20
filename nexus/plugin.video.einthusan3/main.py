@@ -51,9 +51,7 @@ def add_dir_item(name, url, mode, image, lang="", description="", isplayable=Fal
 
     listitem = xbmcgui.ListItem(name)
     listitem.setArt({"icon": "DefaultFolder.png", "thumb": image})
-    tags = listitem.getVideoInfoTag()
-    tags.setTitle(name)
-    tags.setPlot(description)
+    listitem.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
     listitem.setProperty("IsPlayable", "true")
     isfolder = True
     if isplayable:
