@@ -17,4 +17,38 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
+</addon><addon id="repository.eintamil" name="EinTamil Kodi Repository" provider-name="EinTamil" version="2.2.2">
+    <extension name="EinTamil Kodi Repository" point="xbmc.addon.repository">
+        <dir maxversion="18.9.0" minversion="17.0.0">
+            <info compressed="false">
+                https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml</info>
+            <checksum>
+                https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/</datadir>
+        </dir>
+        <dir maxversion="20.9.0" minversion="19.0.0">
+            <info compressed="false">
+                https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml</info>
+            <checksum>
+                https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/</datadir>
+        </dir>
+        <dir minversion="21.0.0">
+            <info compressed="false">
+                https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml</info>
+            <checksum>
+                https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml.md5</checksum>
+            <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/</datadir>
+        </dir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary>EinTamil Kodi Repository</summary>
+        <description>https://eintamil.github.io/</description>
+        <website>https://eintamil.github.io/</website>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
 </addon></addons>
