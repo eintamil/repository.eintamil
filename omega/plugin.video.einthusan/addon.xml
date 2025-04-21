@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.einthusan" name="Einthusan" version="4.0.1" provider-name="EinTamil">
+<addon id="plugin.video.einthusan" name="Einthusan" version="4.5.0" provider-name="EinTamil">
     <requires>
-        <import addon="repository.eintamil" version="1.1.0" />
+        <import addon="repository.eintamil" version="4.5.0" />
         <import addon="script.module.requests" version="2.22.0" />
         <import addon="xbmc.python" version="3.0.0" />
     </requires>

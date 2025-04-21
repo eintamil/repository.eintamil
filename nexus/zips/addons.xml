@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addons><addon id="plugin.video.einthusan3" name="Einthusan" provider-name="EinTamil" version="3.2.3">
+<addons><addon id="plugin.video.einthusan3" name="Einthusan" provider-name="EinTamil" version="3.5.0">
     <requires>
-        <import addon="repository.eintamil" version="1.1.0" />
+        <import addon="repository.eintamil" version="3.5.0" />
         <import addon="script.module.requests" version="2.22.0" />
         <import addon="xbmc.python" version="3.0.0" />
     </requires>
@@ -17,27 +17,21 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
-</addon><addon id="repository.eintamil" name="EinTamil Kodi Repository" provider-name="EinTamil" version="2.2.2">
+</addon><addon id="repository.eintamil" name="EinTamil Kodi Repository" provider-name="EinTamil" version="3.5.0">
     <extension name="EinTamil Kodi Repository" point="xbmc.addon.repository">
         <dir maxversion="18.9.0" minversion="17.0.0">
-            <info compressed="false">
-                https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml</info>
-            <checksum>
-                https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml.md5</checksum>
+            <info compressed="false">https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml</info>
+            <checksum>https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/addons.xml.md5</checksum>
             <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/leia/zips/</datadir>
         </dir>
         <dir maxversion="20.9.0" minversion="19.0.0">
-            <info compressed="false">
-                https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml</info>
-            <checksum>
-                https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml.md5</checksum>
+            <info compressed="false">https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml</info>
+            <checksum>https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/addons.xml.md5</checksum>
             <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/nexus/zips/</datadir>
         </dir>
         <dir minversion="21.0.0">
-            <info compressed="false">
-                https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml</info>
-            <checksum>
-                https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml.md5</checksum>
+            <info compressed="false">https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml</info>
+            <checksum>https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/addons.xml.md5</checksum>
             <datadir zip="true">https://github.com/eintamil/repository.eintamil/raw/main/omega/zips/</datadir>
         </dir>
     </extension>
